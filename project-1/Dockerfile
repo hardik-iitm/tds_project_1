@@ -1,17 +1,27 @@
-# Step 1: Use an official Python runtime as a parent image
-FROM python:3.12-slim
+# Use an official Python runtime as a parent image
+FROM python:3.11-slim
 
-# Step 2: Set the working directory in the container
+# Set the working directory in the container
 WORKDIR /app
 
-# Step 3: Copy the contents of the local directory into the container
+# Copy the current directory contents into the container at /app
 COPY . /app/
 
-# Step 4: Install any dependencies (you should have a requirements.txt)
+# Install system dependencies (e.g., for Prettier or any other tools)
+RUN apt-get update && \
+    apt-get install -y curl build-essential && \
+    apt-get clean
+
+# Install Node.js and npm (required for Prettier and other Node-based tools)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
+    apt-get install -y nodejs && \
+    apt-get clean
+
+# Install Python dependencies (FastAPI, httpx, etc.)
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Step 5: Expose port 8000 (FastAPI runs on this port by default)
+# Expose port 8000 for FastAPI
 EXPOSE 8000
 
-# Step 6: Run the application with Uvicorn (specify FastAPI app entry point)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run the FastAPI app with uvicorn
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
